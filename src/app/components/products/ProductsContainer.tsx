@@ -127,8 +127,8 @@ export default function ProductsContainer() {
             </div>
           </div>
         </section>
-        {OpenModal && <Modal closeModal={setOpenModal} />}
       </div>
+      {OpenModal && <Modal closeModal={setOpenModal} />}
     </div>
   )
 }

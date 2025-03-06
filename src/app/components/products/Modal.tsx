@@ -5,7 +5,7 @@ interface ModalProps {
 export default function Modal({ closeModal }: ModalProps) {
   return (
     <div
-      className={`fixed top-0 left-0 right-0 bottom-0 w-screen h-screen overflow-x-hidden z-50 justify-center items-center bg-black bg-opacity-50`}
+      className={`flex fixed top-0 left-0 right-0 bottom-0 z-50 justify-center items-center`}
     >
       <div className="relative p-4 w-full max-w-md max-h-full">
         <div className="relative bg-white rounded-lg shadow dark:bg-gray-600">
