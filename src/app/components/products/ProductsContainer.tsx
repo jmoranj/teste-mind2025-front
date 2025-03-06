@@ -1,41 +1,33 @@
 'use client'
 
+import Product from '@/app/schemas/ProductsSchemas'
 import { useState } from 'react'
-import Modal from './Modal'
+import UpdateProducts from './UpdateProduct'
 
 export default function ProductsContainer() {
-  const [OpenModal, setOpenModal] = useState(false)
-  type Product = {
-    id: number
-    image: string
-    name: string
-    quantity: number
-    price: number
-  }
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   const mockedProducts: Product[] = [
     {
       id: 1,
-      image: 'um',
       name: 'playstation',
+      description: 'string',
       quantity: 2,
-      price: 23,
-    },
-    {
-      id: 2,
-      image: 'um',
-      name: 'playstation',
-      quantity: 2,
-      price: 23,
-    },
-    {
-      id: 3,
-      image: 'um',
-      name: 'playstation',
-      quantity: 2,
+      image: new Blob(['mock image content'], { type: 'image/jpeg' }),
       price: 23,
     },
   ]
+
+  const handleSelectedProduct = (product: Product) => {
+    setSelectedProduct(product)
+    setOpenModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setOpenModal(false)
+    setSelectedProduct(null)
+  }
 
   return (
     <div className="text-white">
@@ -97,9 +89,7 @@ export default function ProductsContainer() {
                   {mockedProducts.map((product) => (
                     <tr key={product.id}>
                       <td className="px-4 py-4">
-                        <div className="w-16 h-16 min-w-[4rem]">
-                          {product.image}
-                        </div>
+                        <div className="w-16 h-16 min-w-[4rem]"> </div>
                       </td>
                       <td className="px-4 py- 4">
                         <div className="font-medium text-gray-900">
@@ -115,7 +105,7 @@ export default function ProductsContainer() {
                       <td className="px-4 py-4 text-center">
                         <button
                           className="text-blue-500 hover:text-blue-700 inline-flex items-center justify-center"
-                          onClick={() => setOpenModal(true)}
+                          onClick={() => handleSelectedProduct(product)}
                         >
                           Editar
                         </button>
@@ -128,7 +118,11 @@ export default function ProductsContainer() {
           </div>
         </section>
       </div>
-      {OpenModal && <Modal closeModal={setOpenModal} />}
+      <UpdateProducts
+        item={selectedProduct}
+        isOpen={openModal}
+        onClose={handleCloseModal}
+      />
     </div>
   )
 }

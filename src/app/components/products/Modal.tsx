@@ -1,11 +1,13 @@
 'use client'
 interface ModalProps {
+  isOpen: boolean
   closeModal: (value: boolean) => void
+  children: React.ReactNode
 }
-export default function Modal({ closeModal }: ModalProps) {
+export default function Modal({ closeModal, children, isOpen }: ModalProps) {
   return (
     <div
-      className={`flex fixed top-0 left-0 right-0 bottom-0 z-50 justify-center items-center`}
+      className={`flex fixed top-0 left-0 right-0 bottom-0 z-50 justify-center items-center ${isOpen ? 'flex' : 'hidden'}`}
     >
       <div className="relative p-4 w-full max-w-md max-h-full">
         <div className="relative bg-white rounded-lg shadow dark:bg-gray-600">
@@ -35,7 +37,7 @@ export default function Modal({ closeModal }: ModalProps) {
               </svg>
             </button>
           </div>
-          <div className="p-4 md:p-5"></div>
+          <div className="p-4 md:p-5">{children}</div>
         </div>
       </div>
     </div>
