@@ -1,4 +1,10 @@
+'use client'
+
+import { useState } from 'react'
+import Modal from './Modal'
+
 export default function ProductsContainer() {
+  const [OpenModal, setOpenModal] = useState(false)
   type Product = {
     id: number
     image: string
@@ -107,7 +113,10 @@ export default function ProductsContainer() {
                         {product.price}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        <button className="text-blue-500 hover:text-blue-700 inline-flex items-center justify-center">
+                        <button
+                          className="text-blue-500 hover:text-blue-700 inline-flex items-center justify-center"
+                          onClick={() => setOpenModal(true)}
+                        >
                           Editar
                         </button>
                       </td>
@@ -118,6 +127,7 @@ export default function ProductsContainer() {
             </div>
           </div>
         </section>
+        {OpenModal && <Modal closeModal={setOpenModal} />}
       </div>
     </div>
   )
