@@ -7,8 +7,7 @@ import UpdateProducts from './UpdateProduct'
 export default function ProductsContainer() {
   const [openModal, setOpenModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-
-  const mockedProducts: Product[] = [
+  const [products, setProducts] = useState([
     {
       id: 1,
       name: 'playstation',
@@ -17,7 +16,23 @@ export default function ProductsContainer() {
       image: new Blob(['mock image content'], { type: 'image/jpeg' }),
       price: 23,
     },
-  ]
+    {
+      id: 2,
+      name: 'playstation',
+      description: 'string',
+      quantity: 2,
+      image: new Blob(['mock image content'], { type: 'image/jpeg' }),
+      price: 23,
+    },
+    {
+      id: 3,
+      name: 'playstation',
+      description: 'string',
+      quantity: 2,
+      image: new Blob(['mock image content'], { type: 'image/jpeg' }),
+      price: 23,
+    },
+  ])
 
   const handleSelectedProduct = (product: Product) => {
     setSelectedProduct(product)
@@ -27,6 +42,11 @@ export default function ProductsContainer() {
   const handleCloseModal = () => {
     setOpenModal(false)
     setSelectedProduct(null)
+  }
+
+  const deleteOnClick = (productId: number) => {
+    const newProducts = products.filter((product) => product.id !== productId)
+    setProducts(newProducts)
   }
 
   return (
@@ -86,15 +106,13 @@ export default function ProductsContainer() {
                   </tr>
                 </thead>
                 <tbody className="border-b border-amber-50 divide-y divide-amber-50 text-sm border-t">
-                  {mockedProducts.map((product) => (
+                  {products.map((product) => (
                     <tr key={product.id}>
                       <td className="px-4 py-4">
                         <div className="w-16 h-16 min-w-[4rem]"> </div>
                       </td>
                       <td className="px-4 py- 4">
-                        <div className="font-medium text-gray-900">
-                          {product.name}
-                        </div>
+                        <div className="font-medium ">{product.name}</div>
                       </td>
                       <td className="px-4 py-4 text-center">
                         {product.quantity}
@@ -108,6 +126,31 @@ export default function ProductsContainer() {
                           onClick={() => handleSelectedProduct(product)}
                         >
                           Editar
+                        </button>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <button
+                          className="text-grey-500 hover:text-red-700 inline-flex items-center justify-center"
+                          onClick={() => deleteOnClick(product.id)}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-trash-2"
+                          >
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            <line x1="10" x2="10" y1="11" y2="17" />
+                            <line x1="14" x2="14" y1="11" y2="17" />
+                          </svg>
                         </button>
                       </td>
                     </tr>
