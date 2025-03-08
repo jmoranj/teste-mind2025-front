@@ -1,4 +1,4 @@
-import Product from '@/app/schemas/ProductsSchemas'
+import Product from '@/schemas/ProductsSchemas'
 import Modal from './Modal'
 
 interface UpdateProductsProps {
@@ -8,7 +8,7 @@ interface UpdateProductsProps {
 }
 
 export default function UpdateProducts({
-  item,
+  //  item,
   isOpen,
   onClose,
 }: UpdateProductsProps) {

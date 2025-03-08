@@ -1,6 +1,6 @@
 'use client'
 
-import Product from '@/app/schemas/ProductsSchemas'
+import Product from '@/schemas/ProductsSchemas'
 import { useState } from 'react'
 import UpdateProducts from './UpdateProduct'
 
@@ -76,31 +76,25 @@ export default function ProductsContainer() {
               <table className="w-full">
                 <thead className="text-sm text-amber-50 text-left">
                   <tr>
-                    <th scope="col" className="w-32 px-4 py-3 font-normal">
+                    <th scope="col" className="w-32 px-4 py-3 font-bold">
                       Imagem
                     </th>
                     <th
                       scope="col"
-                      className="w-2/5 lg:w-1/3 px-4 py-3 font-normal"
+                      className="w-2/5 lg:w-1/3 px-4 py-3 font-bold"
                     >
                       Produto
                     </th>
                     <th
                       scope="col"
-                      className="w-1/5 px-4 py-3 font-normal text-center"
+                      className="w-1/5 px-4 py-3 font-bold text-center"
                     >
                       Quantidade
                     </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 font-normal text-center"
-                    >
+                    <th scope="col" className="px-4 py-3 font-bold text-center">
                       Valor Unidade
                     </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 font-normal text-center"
-                    >
+                    <th scope="col" className="px-4 py-3 font-bold text-center">
                       Ações
                     </th>
                   </tr>

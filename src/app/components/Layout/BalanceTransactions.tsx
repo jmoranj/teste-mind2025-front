@@ -16,14 +16,15 @@ export default function TransactionsContainer() {
 
   return (
     <>
-      <div className="bg-gray-50 rounded-lg py-6 px-4 sm:px-6 sm:flex sm:items-center sm:justify-between sm:space-x-6 lg:space-x-8">
-        <dl className="divide-y divide-gray-200 space-y-6 text-sm text-gray-600 flex-auto sm:divide-y-0 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-x-6 lg:w-1/2 lg:flex-none lg:gap-x-8">
+      <div className="container mx-auto mt-6 bg-#0d132b rounded-lg py-6 px-4 sm:px-6 sm:flex sm:items-center sm:justify-between sm:space-x-6 lg:space-x-8 border-1">
+        <dl className="divide-y divide-gray-200 space-y-6 text-sm text-white flex-auto sm:divide-y-0 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-x-6 lg:w-1/2 lg:flex-none lg:gap-x-8">
           <div className="flex justify-between sm:block">
-            <dt className="font-medium text-gray-900">Último registro</dt>
-            <dd className="sm:mt-1"></dd>
+            <dt className="font-bold">Último registro</dt>
+            <dd className="sm:mt-1">20/02/2025</dd>
           </div>
-          <div className="flex justify-between pt-6 font-medium text-gray-900 sm:block sm:pt-0">
-            <dt>Faturamento</dt>
+          <div className="flex justify-between pt-6 font-medium sm:block sm:pt-0">
+            <dt className="font-bold">Faturamento</dt>
+            <dd>400000,00</dd>
           </div>
         </dl>
         <button
