@@ -18,31 +18,11 @@ export default function Register() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-900">Idade</label>
-            <input
-              type="number"
-              className="w-full px-3 sm:px-4 py-1.5 sm:py-2 rounded-md border-0 ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-gray-900"
-              placeholder="Digite sua idade"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-900">
-              Foto de perfil
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              className="w-full px-3 sm:px-4 py-1.5 sm:py-2 rounded-md border-0 ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-gray-900"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-900">Email</label>
             <input
               type="email"
               className="w-full px-3 sm:px-4 py-1.5 sm:py-2 rounded-md border-0 ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-gray-900"
-              placeholder="seu@email.com"
+              placeholder="exemplo@email.com"
             />
           </div>
 
