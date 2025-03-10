@@ -45,6 +45,41 @@ export const formatDateForApi = (dateString: string): string => {
 
 // Helper function to parse DD/MM/YYYY to YYYY-MM-DD for HTML date input
 export const parseDateFromApi = (dateString: string): string => {
-  const [day, month, year] = dateString.split('/')
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  // Check if date is already in ISO format (YYYY-MM-DD)
+  if (dateString.includes('-')) {
+    return dateString.split('T')[0] // Remove time portion if present
+  }
+
+  // Check if the date uses / separator
+  if (dateString.includes('/')) {
+    const parts = dateString.split('/')
+
+    // Determine format based on parts
+    if (parts.length === 3) {
+      // If the first part looks like a year (4 digits)
+      if (parts[0].length === 4) {
+        // YYYY/MM/DD format
+        const [year, month, day] = parts
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      } else {
+        // Assume DD/MM/YYYY format
+        const [day, month, year] = parts
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      }
+    }
+  }
+
+  // If it's a timestamp or other date format, try to convert it
+  try {
+    const date = new Date(dateString)
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0]
+    }
+  } catch (error) {
+    console.error('Error parsing date:', error)
+  }
+
+  // If all else fails, return today's date
+  console.warn('Could not parse date:', dateString)
+  return new Date().toISOString().split('T')[0]
 }

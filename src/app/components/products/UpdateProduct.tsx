@@ -36,7 +36,6 @@ export default function UpdateProducts({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [submissionError, setSubmissionError] = useState('')
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // Load product data when item changes
   useEffect(() => {
@@ -52,19 +51,6 @@ export default function UpdateProducts({
           : new Date().toISOString().split('T')[0],
         category: item.category,
       })
-
-      // Create image preview if available
-      if (item.image) {
-        try {
-          const blob = new Blob([item.image], { type: 'image/jpeg' })
-          const url = URL.createObjectURL(blob)
-          setImagePreview(url)
-        } catch (error) {
-          console.error('Error creating image preview:', error)
-        }
-      } else {
-        setImagePreview(null)
-      }
 
       // Reset state
       setImageFile(null)
@@ -123,17 +109,7 @@ export default function UpdateProducts({
   // Handle file input changes
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setImageFile(file)
-
-      // Create and set image preview
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setImagePreview(event.target.result as string)
-        }
-      }
-      reader.readAsDataURL(file)
+      setImageFile(e.target.files[0])
 
       // Clear image error if exists
       if (errors.image) {
@@ -264,15 +240,7 @@ export default function UpdateProducts({
             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Imagem do Produto
             </label>
-            {imagePreview && (
-              <div className="mb-2 w-24 h-24 relative">
-                <img
-                  src={imagePreview}
-                  alt="Product preview"
-                  className="w-full h-full object-cover rounded-md"
-                />
-              </div>
-            )}
+
             <input
               type="file"
               name="image"
