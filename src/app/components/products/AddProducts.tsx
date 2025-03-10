@@ -1,26 +1,255 @@
 'use client'
 
+import api from '@/api/api'
+import {
+  ProductFormData,
+  formatDateForApi,
+  validateProductForm,
+} from '@/schemas/ProductsSchemas'
+import Cookies from 'js-cookie'
+import { useState } from 'react'
 import Modal from './Modal'
 
 interface AddProductsProps {
   isOpen: boolean
   onClose: () => void
+  onSuccess?: () => void
 }
 
-export default function AddProductions({ isOpen, onClose }: AddProductsProps) {
+export default function AddProducts({
+  isOpen,
+  onClose,
+  onSuccess,
+}: AddProductsProps) {
+  const [formData, setFormData] = useState<ProductFormData>({
+    name: '',
+    description: '',
+    quantity: 1,
+    price: 0,
+    date: new Date().toISOString().split('T')[0],
+    category: true,
+  })
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(false)
+  const [submissionError, setSubmissionError] = useState('')
+
+  // Handle text input changes
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
+    const { name, value, type } = e.target as HTMLInputElement
+
+    // Convert numeric inputs to numbers
+    if (type === 'number') {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value === '' ? '' : Number(value),
+      }))
+    }
+    // Handle checkbox/boolean values
+    else if (type === 'checkbox') {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: (e.target as HTMLInputElement).checked,
+      }))
+    }
+    // Handle select dropdown for category
+    else if (name === 'category') {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value === 'Entrada',
+      }))
+    }
+    // Handle regular text inputs
+    else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
+
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[name]
+        return newErrors
+      })
+    }
+  }
+
+  // Handle file input changes
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0])
+
+      // Clear image error if exists
+      if (errors.image) {
+        setErrors((prev) => {
+          const newErrors = { ...prev }
+          delete newErrors.image
+          return newErrors
+        })
+      }
+    }
+  }
+
+  // Handle form submission
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmissionError('')
+
+    // Validate form using schema from ProductsSchemas
+    const validationResult = validateProductForm(formData)
+
+    if (!validationResult.success) {
+      // Convert Zod errors to a more usable format
+      const fieldErrors: Record<string, string> = {}
+      validationResult.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          fieldErrors[error.path[0] as string] = error.message
+        }
+      })
+
+      setErrors(fieldErrors)
+      return
+    }
+
+    // Validate image is present
+    if (!imageFile) {
+      setErrors((prev) => ({
+        ...prev,
+        image: 'Imagem do produto é obrigatória',
+      }))
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      // Get current user ID from the JWT token
+      let userId = ''
+
+      try {
+        // Get userId from token (extract from cookie or make an API call)
+        const token = Cookies.get('accessToken')
+        if (token) {
+          // Decode JWT to get user ID - do not use for security validation
+          const base64Url = token.split('.')[1]
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+          const decodedToken = JSON.parse(window.atob(base64))
+          userId = decodedToken.userId // assuming your token has userId property
+        }
+
+        // If token doesn't contain userId, make an API call to get user info
+        if (!userId) {
+          const userResponse = await api.get('/users/me')
+          userId = userResponse.data.id
+        }
+      } catch (error) {
+        console.error('Error getting user ID:', error)
+        setSubmissionError('Falha ao obter ID do usuário')
+        return
+      }
+
+      // Create FormData for multipart/form-data submission (for file upload)
+      const formDataToSend = new FormData()
+      formDataToSend.append('name', formData.name)
+      if (formData.description)
+        formDataToSend.append('description', formData.description)
+      formDataToSend.append('quantity', formData.quantity.toString())
+      formDataToSend.append('price', formData.price.toString())
+      formDataToSend.append('date', formatDateForApi(formData.date))
+      formDataToSend.append('category', formData.category.toString())
+      formDataToSend.append('image', imageFile)
+
+      // Add the userId to FormData without showing it in UI
+      formDataToSend.append('userId', userId)
+
+      // Send request to API
+      const response = await api.post('/product', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
+      console.log('Product added successfully:', response.data)
+
+      // Reset form
+      setFormData({
+        name: '',
+        description: '',
+        quantity: 1,
+        price: 0,
+        date: new Date().toISOString().split('T')[0],
+        category: true,
+      })
+      setImageFile(null)
+
+      // Close modal
+      onClose()
+
+      // Call success callback if provided
+      if (onSuccess) onSuccess()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error('Error adding product:', err)
+
+      if (err.response?.data?.error) {
+        setSubmissionError(err.response.data.error)
+      } else if (err.response?.status === 401) {
+        setSubmissionError(
+          'Você precisa estar autenticado para adicionar produtos',
+        )
+      } else {
+        setSubmissionError('Ocorreu um erro ao adicionar o produto')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <Modal isOpen={isOpen} closeModal={onClose}>
-      <form>
+      {submissionError && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {submissionError}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
         <div className="grid gap-4 mb-4 grid-cols-2">
           <div className="col-span-2">
             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Nome
             </label>
             <input
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={`bg-gray-50 border ${errors.name ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
               placeholder="Digite o nome do produto"
             />
-            <span className="text-red-500"></span>
+            {errors.name && (
+              <span className="text-red-500 text-sm">{errors.name}</span>
+            )}
+          </div>
+
+          <div className="col-span-2">
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Descrição (opcional)
+            </label>
+            <textarea
+              name="description"
+              value={formData.description || ''}
+              onChange={handleChange}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+              placeholder="Digite a descrição do produto"
+            />
           </div>
 
           <div className="col-span-2">
@@ -29,8 +258,14 @@ export default function AddProductions({ isOpen, onClose }: AddProductsProps) {
             </label>
             <input
               type="file"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+              name="image"
+              onChange={handleFileChange}
+              accept="image/*"
+              className={`bg-gray-50 border ${errors.image ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white`}
             />
+            {errors.image && (
+              <span className="text-red-500 text-sm">{errors.image}</span>
+            )}
           </div>
 
           <div className="col-span-2 sm:col-span-1">
@@ -39,10 +274,16 @@ export default function AddProductions({ isOpen, onClose }: AddProductsProps) {
             </label>
             <input
               type="number"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+              name="quantity"
+              value={formData.quantity}
+              onChange={handleChange}
+              min="1"
+              className={`bg-gray-50 border ${errors.quantity ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
               placeholder="Quantidade"
             />
-            (<span className="text-red-500"></span>)
+            {errors.quantity && (
+              <span className="text-red-500 text-sm">{errors.quantity}</span>
+            )}
           </div>
 
           <div className="col-span-2 sm:col-span-1">
@@ -51,31 +292,86 @@ export default function AddProductions({ isOpen, onClose }: AddProductsProps) {
             </label>
             <input
               type="number"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              min="0.01"
               step="0.01"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+              className={`bg-gray-50 border ${errors.price ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
               placeholder="Preço"
             />
-            (<span className="text-red-500"></span>)
+            {errors.price && (
+              <span className="text-red-500 text-sm">{errors.price}</span>
+            )}
           </div>
 
-          <div className="col-span-2">
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Data
+            </label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              className={`bg-gray-50 border ${errors.date ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+            />
+            {errors.date && (
+              <span className="text-red-500 text-sm">{errors.date}</span>
+            )}
+          </div>
+
+          <div className="col-span-2 sm:col-span-1">
             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Categoria
             </label>
-            <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-              <option value="">Selecionar categoria</option>
-              <option value="Saída">Saída</option>
+            <select
+              name="category"
+              value={formData.category ? 'Entrada' : 'Saída'}
+              onChange={handleChange}
+              className={`bg-gray-50 border ${errors.category ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500`}
+            >
               <option value="Entrada">Entrada</option>
+              <option value="Saída">Saída</option>
             </select>
-            <span className="text-red-500"></span>
+            {errors.category && (
+              <span className="text-red-500 text-sm">{errors.category}</span>
+            )}
           </div>
         </div>
 
         <button
           type="submit"
-          className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          disabled={loading}
+          className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 disabled:opacity-50"
         >
-          Adicionar
+          {loading ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Adicionando...
+            </>
+          ) : (
+            'Adicionar'
+          )}
         </button>
       </form>
     </Modal>
