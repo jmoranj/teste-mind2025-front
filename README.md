@@ -5,7 +5,7 @@
 
 ## Passo a Passo
 
-1. Instale as dependências necessárias:
+Instale as dependências necessárias:
 
 ```
 npm install
