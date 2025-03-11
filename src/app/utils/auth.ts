@@ -1,21 +1,34 @@
 import api from '@/api/api'
-import { NextPageContext } from 'next'
-import ServerCookie from 'next-cookies'
+import Cookies from 'js-cookie'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-export default async function AuthReq(
-  ctx: NextPageContext,
-): Promise<string | null> {
-  const { accessToken } = ServerCookie(ctx)
+export function Auth() {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  if (!accessToken) return null
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = Cookies.get('accessToken')
 
-  try {
-    await api.get('/users/validate-jwt', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-    return `Bearer ${accessToken}`
-  } catch (err) {
-    console.error('Token validation error:', err)
-    return null
-  }
+        if (!token) {
+          router.push('/login')
+          return
+        }
+
+        await api.get('/user/validate-jwt')
+        setIsAuthenticated(true)
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Authentication check failed:', error)
+        router.push('/login')
+      }
+    }
+
+    checkAuth()
+  }, [router])
+
+  return { isLoading, isAuthenticated }
 }

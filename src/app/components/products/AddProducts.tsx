@@ -98,7 +98,6 @@ export default function AddProducts({
   }
 
   // Handle form submission
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmissionError('')

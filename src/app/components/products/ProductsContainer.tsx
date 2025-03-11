@@ -36,12 +36,6 @@ export default function ProductsContainer() {
           const decodedToken = JSON.parse(window.atob(base64))
           userId = decodedToken.userId // assuming your token has userId property
         }
-
-        // If token doesn't contain userId, make an API call to get user info
-        if (!userId) {
-          const userResponse = await api.get('/user/me')
-          userId = userResponse.data.id
-        }
       } catch (error) {
         console.error('Error getting user ID:', error)
         setError('Failed to authenticate user')
@@ -104,11 +98,8 @@ export default function ProductsContainer() {
     setOpenAddModal(false)
   }
 
-  // Convert binary image data to image URL
-
-  // Enhanced getImageUrl function to handle Blob data from API
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getImageUrl = (imageData: any) => {
+  const getImage = (imageData: any) => {
     if (!imageData) return '/placeholder-image.png'
 
     try {
@@ -203,7 +194,7 @@ export default function ProductsContainer() {
                     <div className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-gray-300 rounded-md overflow-hidden">
                         <img
-                          src={getImageUrl(product.image)}
+                          src={getImage(product.image)}
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />
@@ -282,7 +273,7 @@ export default function ProductsContainer() {
                         <td className="px-4 py-4">
                           <div className="w-16 h-16 min-w-[4rem] rounded overflow-hidden bg-gray-100">
                             <img
-                              src={getImageUrl(product.image)}
+                              src={getImage(product.image)}
                               alt={product.name}
                               className="w-full h-full object-cover"
                             />
