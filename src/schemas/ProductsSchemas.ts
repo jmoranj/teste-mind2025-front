@@ -83,3 +83,7 @@ export const parseDateFromApi = (dateString: string): string => {
   console.warn('Could not parse date:', dateString)
   return new Date().toISOString().split('T')[0]
 }
+
+export interface ProductsContainerProps {
+  onDataChange?: () => void
+}

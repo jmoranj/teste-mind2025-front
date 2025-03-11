@@ -46,6 +46,7 @@ export default function ProductsContainer() {
       // Make API call with userId
       const response = await api.get(`/product/${userId}`)
       setProducts(response.data)
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Error fetching products:', err)
@@ -59,6 +60,14 @@ export default function ProductsContainer() {
   useEffect(() => {
     fetchProducts()
   }, [])
+
+  const handleProductAdded = () => {
+    fetchProducts() // Refresh products list
+  }
+
+  const handleProductUpdated = () => {
+    fetchProducts() // Refresh products list
+  }
 
   // Handle product selection for update
   const handleSelectedProduct = (product: ProductResponse) => {
@@ -82,6 +91,8 @@ export default function ProductsContainer() {
       await api.delete(`/product/${productId}`)
       // Refresh product list
       fetchProducts()
+
+      window.location.reload()
     } catch (err) {
       console.error('Error deleting product:', err)
       alert('Failed to delete product')
@@ -342,7 +353,7 @@ export default function ProductsContainer() {
       <AddProducts
         isOpen={openAddModal}
         onClose={handleCloseAddModal}
-        onSuccess={fetchProducts}
+        onSuccess={handleProductAdded}
       />
 
       {/* Update Product Modal */}
@@ -350,7 +361,7 @@ export default function ProductsContainer() {
         item={selectedProduct}
         isOpen={openUpdateModal}
         onClose={handleCloseUpdateModal}
-        onSuccess={fetchProducts}
+        onSuccess={handleProductUpdated}
       />
     </div>
   )

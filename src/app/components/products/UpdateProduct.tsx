@@ -180,6 +180,9 @@ export default function UpdateProducts({
 
       // Close modal
       onClose()
+
+      window.location.reload()
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Error updating product:', err)

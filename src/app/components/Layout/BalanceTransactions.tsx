@@ -2,11 +2,16 @@
 import Cookies from 'js-cookie'
 
 import api from '@/api/api'
-import { ProductResponse } from '@/schemas/ProductsSchemas'
+import {
+  ProductResponse,
+  ProductsContainerProps,
+} from '@/schemas/ProductsSchemas'
 import { useEffect, useState } from 'react'
 import AddProducts from '../products/AddProducts'
 
-export default function BalanceTransactions() {
+export default function BalanceTransactions({
+  onDataChange,
+}: ProductsContainerProps) {
   const [openModal, setOpenModal] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [products, setProducts] = useState<ProductResponse[]>([])
@@ -36,7 +41,7 @@ export default function BalanceTransactions() {
           const base64Url = token.split('.')[1]
           const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
           const decodedToken = JSON.parse(window.atob(base64))
-          userId = decodedToken.userId // assuming your token has userId property
+          userId = decodedToken.userId
         }
 
         // If token doesn't contain userId, make an API call to get user info
@@ -54,6 +59,10 @@ export default function BalanceTransactions() {
       // Make API call with userId
       const response = await api.get(`/product/${userId}`)
       setProducts(response.data)
+
+      if (onDataChange) {
+        onDataChange()
+      }
 
       // Calculate statistics from products
       calculateStats(response.data)

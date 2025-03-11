@@ -194,6 +194,8 @@ export default function AddProducts({
 
       // Call success callback if provided
       if (onSuccess) onSuccess()
+
+      window.location.reload()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Error adding product:', err)
